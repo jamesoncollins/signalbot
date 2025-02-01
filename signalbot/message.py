@@ -4,6 +4,7 @@ from typing import Optional
 
 
 from signalbot.api import SignalAPI
+from pickle import NONE
 
 
 class MessageType(Enum):
@@ -71,6 +72,7 @@ class Message:
     @classmethod
     async def parse(cls, signal: SignalAPI, raw_message: str):
         try:
+            raw_message_str = raw_message
             raw_message = json.loads(raw_message)
         except Exception:
             raise UnknownMessageFormatError
@@ -98,8 +100,23 @@ class Message:
             mentions = cls._parse_mentions(
                 raw_message["envelope"]["syncMessage"]["sentMessage"]
             )
-            base64_attachments = None
-            attachments_local_filenames = None
+            base64_attachments = await cls._parse_attachments(
+                signal, raw_message["envelope"]["syncMessage"]["sentMessage"]
+            )
+            attachments_local_filenames = cls._parse_attachments_local_filenames(
+                raw_message["envelope"]["syncMessage"]["sentMessage"]
+            )
+            base64_attachments_quoted = None
+            attachments_local_filenames_quoted = NONE
+            try:
+                base64_attachments_quoted = await cls._parse_attachments(
+                    signal, raw_message["envelope"]["syncMessage"]["sentMessage"]["quote"]
+                )
+                attachments_local_filenames_quoted = cls._parse_attachments_local_filenames(
+                    raw_message["envelope"]["syncMessage"]["sentMessage"]["quote"]
+                )
+            except:
+                pass
 
         # Option 2: dataMessage
         elif "dataMessage" in raw_message["envelope"]:
