@@ -193,7 +193,7 @@ class SignalBot:
             text,
             base64_attachments=base64_attachments,
             quote_author=quote_author,
-            quote_mentions=quote_mentions,
+            quote_mentions="",
             quote_message=quote_message,
             quote_timestamp=quote_timestamp,
             mentions=mentions,
